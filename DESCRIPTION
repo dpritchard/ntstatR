@@ -1,0 +1,9 @@
+Package: ntstat
+Title: What the Package Does (one line, title case)
+Version: 0.0.0.9000
+Authors@R: person("Daniel", "Pritchard", email = "daniel@pritchard.co", role = c("aut", "cre"))
+Description: Ngāi Tahu State of the Takiwā Assessment Tools
+Depends: R (>= 3.4.4)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
