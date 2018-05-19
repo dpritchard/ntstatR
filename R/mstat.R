@@ -1,4 +1,4 @@
-mstat <- function(safe, spp, habitat, names=NULL, as.char=FALSE){
+mstat <- function(safe, spp, habitat, names=NULL){
   if (!is.numeric(safe) || length(safe) != 1){
     stop("safe must be a numeric vector of length 1")
   }
@@ -42,7 +42,7 @@ mstat <- function(safe, spp, habitat, names=NULL, as.char=FALSE){
 
   # -1 and -2 mean NA in this context
   habitat[habitat < 0] <- NA
-  # Calculaute the habitat score (out of 4)
+  # Calculate the habitat score (out of 4)
   if (is.null(nrow(habitat))){
     habitat_score <- mean(habitat, na.rm=TRUE)
   } else {
@@ -50,32 +50,36 @@ mstat <- function(safe, spp, habitat, names=NULL, as.char=FALSE){
   }
 
   # OK, begin calculation
+  # Get the scores including species and habitat, ignoring site safety
   if (is.null(nrow(spp)) || nrow(spp) == 1){
-    spp_health <- (sum(spp[-2], na.rm=TRUE) + habitat_score) * spp[2]
+    scores_ex_safety <- (sum(spp[-2], na.rm=TRUE) + habitat_score) * spp[2]
   } else {
-    spp_health <- (rowSums(spp[, -2], na.rm=TRUE) + habitat_score) * spp[, 2]
+    scores_ex_safety <- (rowSums(spp[, -2], na.rm=TRUE) + habitat_score) * spp[, 2]
   }
-  spp_healthR <- spp_health / 48
-  spp_site <- spp_health * safe
-  spp_siteR <- spp_site / 192
+  scores_ex_safetyR <- scores_ex_safety / 48
+
+  # Now account for site safety:
+  scores <- scores_ex_safety * safe
+  scoresR <- scores / 192
+
+  # Weight species for the final score:
   num_spp <- ifelse(test = is.null(nrow(spp)), yes = 1, no = nrow(spp))
   spp_weights <- mstat_weight_spp(num_spp)
-  spp_weighted <- cumsum(spp_site * spp_weights) / cumsum(spp_weights)
+  scores_weighted <- cumsum(scores * spp_weights) / cumsum(spp_weights)
   ## In the XLS sheet, the final score is effectively the same as the last calculated cumulative average score (with some seriously complex if/elses!)
   ## Lets grab that...
-  final_score <- tail(spp_weighted, n = 1)
+  final_score <- tail(scores_weighted, n = 1)
   final_scoreR <- final_score / 192
 
   out <- list()
-  out <- list("spp_names" = names, "spp_health" = spp_health,
-              "spp_healthR" = spp_healthR, "spp_site" = spp_site,
-              "spp_siteR" = spp_siteR, "final_score" = final_score,
-              "final_scoreR" = final_scoreR)
+  out <- list("spp" = names,
+              "excluding_safety" = list("scores" = scores_ex_safety,
+                                        "ratios" = scores_ex_safetyR),
+              "including_safety" = list("scores" = scores,
+                                        "ratios" = scoresR),
+              "final_score" = final_score,
+              "final_ratio" = final_scoreR)
   class(out) <- c("mstat", class(out))
-  # If
-  if(as.char){
-      out <- mstat_as_char(out)
-  }
   return(out)
 }
 
@@ -87,55 +91,20 @@ mstat_weight_spp <- function(nspp){
   return(weights)
 }
 
-mstat_as_char <- function(mstat, rnd = 2, prnd = 0){
-    ## To make life easier later, we will format some display strings
-    spp_health <- paste0(round(mstat$spp_health, rnd))
-    spp_healthR <- paste0(round(mstat$spp_healthR, rnd))
-    spp_healthP <- paste0(round(mstat$spp_healthR * 100, prnd))
-
-    spp_site <- paste0(round(mstat$spp_site, rnd))
-    spp_siteR <- paste0(round(mstat$spp_siteR, rnd))
-    spp_siteP <- paste0(round(mstat$spp_siteR *100, prnd))
-
-    final_score <- paste0(round(mstat$final_score, rnd))
-    final_scoreR <- paste0(round(mstat$final_scoreR, rnd))
-    final_scoreP <- paste0(round(mstat$final_scoreR * 100, prnd))
-
-    byspp <- data.frame("name"=mstat$spp_names,
-                        "spp_health" = spp_health, "spp_healthR" = spp_healthR, "spp_healthP" = spp_healthP,
-                        "spp_site" = spp_site, "spp_siteR" = spp_siteR, "spp_siteP" = spp_siteP)
-
-    out <- list()
-    out <- list("spp_names" = mstat$spp_names,
-                "spp_health" = spp_health, "spp_healthR" = spp_healthR,
-                "spp_healthP" = spp_healthP,
-                "spp_site" = spp_site, "spp_siteR" = spp_siteR,
-                "spp_siteP" = spp_siteP,
-                "final_score" = final_score, "final_scoreR" = final_scoreR,
-                "final_scoreP" = final_scoreP, "spp" = byspp
-                )
-    return(out)
-}
-
-print.mstat <- function(x, ...){
-    s <- mstat_as_char(x)
-    cat("NT-STAT-Marine Result\n")
-    cat("-----------\n")
-    cat(paste0("Final score:     ", s$final_score, "\n"))
-    cat(paste0("Cultural health: ", s$final_scoreP, "%\n\n"))
-    maxspplen <- max(stringr::str_length(s$spp_names))+2
-    colwidth <- 20
-    cat("Species scores (%)\n")
-    cat(rep(" ", times=maxspplen+1),
-        stringr::str_pad("excl. site safety", colwidth, side="both"),
-        stringr::str_pad("inc. site safety", colwidth, side="both"),
-        "\n", sep="")
-    for(a in 1:length(s$spp_health)){
-        cat(stringr::str_pad(paste0(s$spp_names[a],": "), maxspplen, side="right"),
-            stringr::str_pad(paste0(s$spp_health[a], " (", s$spp_healthP[a], "%)"),
-                             colwidth, side="both"),
-            stringr::str_pad(paste0(s$spp_site[a], " (", s$spp_siteP[a], "%)"),
-                             colwidth, side="both"),
-            "\n", sep="")
+print.mstat <- function(x, include_safe = TRUE, ...){
+    cat(sprintf("Final score: %.0f (%.0f%%)\n", x$final_score, x$final_ratio*100))
+    max_spp_len <- max(stringr::str_length(x$spp))+2
+    if(include_safe){
+        site_text <- "Including"
+        sc <- x$including_safety
+    } else {
+        site_text <- "Excluding"
+        sc <- x$excluding_safety
+    }
+    cat(sprintf("Species Scores (%s Site Health)\n", site_text))
+    for(a in seq_along(sc$scores)){
+        cat("  ")
+        cat(stringr::str_pad(paste0(x$spp[a],": "), max_spp_len, side="right"))
+        cat(sprintf("%.0f (%.0f%%)\n", sc$scores[a], sc$ratios[a]*100))
     }
 }
