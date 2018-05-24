@@ -1,10 +1,10 @@
-\name{mstat_weight_spp}
-\alias{mstat_weight_spp}
+\name{statm_weight_spp}
+\alias{statm_weight_spp}
 
 \title{Species Weightings for NT-STAT Marine Assesment}
 \description{Provides a weighting vector for species in the NT-STAT Marine Assesment.}
 \usage{
-mstat_weight_spp(nspp)
+statm_weight_spp(nspp)
 }
 
 \arguments{
@@ -24,14 +24,14 @@ Daniel Pritchard
 }
 
 \seealso{
-\code{\link{mstat_weight_spp}}
+\code{\link{statm_weight_spp}}
 }
 \examples{
 # An example with five species, the current limit
-fivespp <- mstat_weight_spp(5)
+fivespp <- statm_weight_spp(5)
 plot(1:5, fivespp, ylab="Relative Importance", xlab="Species Rank", ylim=c(0,1))
 
 # An exmaple with fifty species, for illustration
-manyspp <- mstat_weight_spp(50)
+manyspp <- statm_weight_spp(50)
 plot(1:50, manyspp, ylab="Relative Importance", xlab="Species Rank", ylim=c(0,1))
 }

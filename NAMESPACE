@@ -1,3 +1,2 @@
-
-export(mstat, mstat_weight_spp)
-S3method(print, mstat)
+export(statm, statm_weight_spp)
+S3method(print, statm)

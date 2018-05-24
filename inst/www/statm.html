@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>NT-STAT</title>
+
+    <link href="./css/app.css" rel="stylesheet">
+    <link href="./css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+        <a class="navbar-brand" href="./">NT-STAT</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTop">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="./">Home</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="./statm.html">Marine Assesment <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+<main role="main" id="app" class="container">
+<form @submit.prevent="onSubmit">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="form-group">
+            <h4>Food Safety</h4>
+            <safe-to-eat v-model="safeToEat"></safe-to-eat>
+            </div>
+        </div>
+        <div class="col-lg">
+            <div class="form-group">
+            <h4>Habitat Quality</h4>
+            <habitat v-bind:water-quality.sync = "habitat.waterQuality"
+                     v-bind:anoxic-sediment.sync = "habitat.anoxicSediment"
+                     v-bind:sediment.sync = "habitat.sediment"
+                     v-bind:invasive-species.sync = "habitat.invasiveSpecies"
+                     v-bind:seaweed-seagrass.sync = "habitat.seaweedSeagrass"
+                     v-bind:ulva-bloom.sync = "habitat.ulvaBloom" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+      <div class="col-lg">
+          <div class="d-flex align-items-center mb-2">
+              <h4 class="d-inline-block mb-0 mr-2">Kai Species</h4>
+              <button class="btn btn-success btn-sm" @click.prevent="addSpp" v-bind:class="{ 'disabled': !canAddSpecies }">Add</button>
+          </div>
+          <p>You may add up to 5 species. You must answer three questions for each species.</p>
+
+          <kai-species v-for="(sp, indx) in kaiSpecies"
+                       v-bind:name.sync="sp.name"
+                       v-bind:sedentary.sync="sp.sedentary"
+                       v-bind:replace.sync="sp.replace"
+                       v-bind:get-a-feed.sync="sp.getAFeed"
+                       v-bind:taste-condition.sync="sp.tasteCondition"
+                       v-bind:key="sp.id"
+                       v-bind:indx="indx"
+                       v-on:delete-species="delSpp"
+                       v-bind:can-remove-species.sync="canRemoveSpecies" />
+      </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-2">
+            <button type="submit" class="btn btn-primary">Calculate</button>
+        </div>
+        <div v-if="calcScore" class="col-lg">
+            <p class="text-center"><span class="font-weight-bold">Overall Score: {{ finalScorePercent }}%</span></p>
+            <doughnut v-bind:score="calcScore.final_ratio[0]" v-bind:score-max="1" v-bind:height="100"></doughnut>
+        </div>
+        <div v-if="calcError" class="col-lg text-danger">
+            <h4>Error</h4>
+            <p>{{ calcError }}</p>
+        </div>
+    </div>
+</form>
+</main>
+
+    <script src="./js/app.js"></script>
+
+</body>
+</html>

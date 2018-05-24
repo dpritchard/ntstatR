@@ -1,10 +1,11 @@
-Package: ntstat
-Title: What the Package Does (one line, title case)
+Package: ntstatR
+Title: Ngāi Tahu State of the Takiwā Assessment Tools in R
 Version: 0.0.0.9000
 Authors@R: person("Daniel", "Pritchard", email = "daniel@pritchard.co", role = c("aut", "cre"))
-Description: Ngāi Tahu State of the Takiwā Assessment Tools
+Description: Provides simple analysis methods for NT-STAT survey tools. 
 Depends: R (>= 3.4.4)
-License: What license is it under?
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: stringr
+RoxygenNote: 6.0.1
