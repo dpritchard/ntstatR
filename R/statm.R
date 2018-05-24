@@ -14,8 +14,8 @@ statm <- function(safe, spp, habitat){
         }
         spp <- tmp
     }
-    if(!is.data.frame(spp)){
-        stop("spp must be a dataframe", call. = FALSE)
+    if(!list(spp)){
+        stop("spp must be a list", call. = FALSE)
     }
     if(nrow(spp) < 1 || nrow(spp) > 5){
         stop("You must provide at least one, but no more than five, species.", call. = FALSE)
