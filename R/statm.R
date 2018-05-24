@@ -8,14 +8,16 @@ statm <- function(safe, spp, habitat){
     }
     # Test spp
     if(is.data.frame(spp)){
-        tmp <- apply(spp, MARGIN = 1, FUN = as.list)
-        names(tmp) <- NULL
+        tmp <- list()
+        for(a in 1:nrow(spp)){
+            tmp[[a]] <- as.list(spp[a,])
+        }
         spp <- tmp
     }
-    if(!is.list(spp)){
-        stop("spp must be a list.", call. = FALSE)
+    if(!is.data.frame(spp)){
+        stop("spp must be a dataframe", call. = FALSE)
     }
-    if(length(spp) < 1 || length(spp) > 5){
+    if(nrow(spp) < 1 || nrow(spp) > 5){
         stop("You must provide at least one, but no more than five, species.", call. = FALSE)
     }
     uis <- 1L
