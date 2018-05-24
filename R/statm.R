@@ -14,10 +14,10 @@ statm <- function(safe, spp, habitat){
         }
         spp <- tmp
     }
-    if(!list(spp)){
+    if(!is.list(spp)){
         stop("spp must be a list", call. = FALSE)
     }
-    if(nrow(spp) < 1 || nrow(spp) > 5){
+    if(length(spp) < 1 || length(spp) > 5){
         stop("You must provide at least one, but no more than five, species.", call. = FALSE)
     }
     uis <- 1L
@@ -54,20 +54,19 @@ statm <- function(safe, spp, habitat){
     spp_out <- lapply(spp, get_species_scores, habitat = habitat_score, safe = safe)
 
     # Weight species for the final score:
-    num_spp <- ifelse(test = is.null(nrow(spp)), yes = 1, no = nrow(spp))
-    spp_weights <- statm_weight_spp(num_spp)
+    spp_weights <- statm_weight_spp(length(spp))
 
     scores <- sapply(spp_out, '[[', 'incl_saftey')
     scores_weighted <- cumsum(scores * spp_weights) / cumsum(spp_weights)
     ## In the XLS sheet, the final score is effectively the same as the last calculated cumulative average score (with some seriously complex if/elses!)
     ## Lets grab that...
-    final_score <- tail(scores_weighted, n = 1)
-    final_scoreR <- final_score / 192
+    final <- list('score' = tail(scores_weighted, n = 1))
+    final[['max']] <- 192
+    final[['ratio']] <- final[['score']]/final[['max']]
 
     out <- list()
     out <- list("spp" = spp_out,
-                "final" = list("score" = final_score,
-                               "ratio" = final_scoreR))
+                "final" = final)
     class(out) <- c("statm", class(out))
     return(out)
 }
@@ -117,18 +116,27 @@ get_species_scores <- function(x, habitat, safe){
 
 print.statm <- function(x, include_safe = TRUE, ...){
     cat(sprintf("Final score: %.0f (%.0f%%)\n", x$final$score, x$final$ratio*100))
-    max_spp_len <- max(stringr::str_length(x$spp))+2
+    nmes <- sapply(x$spp, "[[", 'name')
+    max_spp_len <- max(stringr::str_length(nmes))+2
     if(include_safe){
-        site_text <- "Including"
-        sc <- x$including_safety
+        safe_text <- "Including"
     } else {
-        site_text <- "Excluding"
-        sc <- x$excluding_safety
+        safe_text <- "Excluding"
     }
-    cat(sprintf("Species Scores (%s Site Health)\n", site_text))
-    for(a in seq_along(sc$score)){
+    cat(sprintf("Species Scores (%s Site Health)\n", safe_text))
+    for(a in seq_along(x$spp)){
         cat("  ")
-        cat(stringr::str_pad(paste0(x$spp[a],": "), max_spp_len, side="right"))
-        cat(sprintf("%.0f (%.0f%%)\n", sc$score[a], sc$ratio[a]*100))
+        cat(stringr::str_pad(paste0(x$spp[[a]][['name']],": "),
+                             max_spp_len,
+                             side="right"))
+        if(include_safe){
+            cat(sprintf("%.0f (%.0f%%)\n",
+                        x$spp[[a]][['incl_saftey']],
+                        x$spp[[a]][['incl_saftey_ratio']]*100))
+        } else {
+            cat(sprintf("%.0f (%.0f%%)\n",
+                        x$spp[[a]][['ex_saftey']],
+                        x$spp[[a]][['ex_saftey_ratio']]*100))
+        }
     }
 }
