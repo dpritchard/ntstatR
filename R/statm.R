@@ -7,6 +7,11 @@ statm <- function(safe, spp, habitat){
         stop("safe must be in the range 0 to 4")
     }
     # Test spp
+    if(is.data.frame(spp)){
+        tmp <- apply(spp, MARGIN = 1, FUN = as.list)
+        names(tmp) <- NULL
+        spp <- tmp
+    }
     if(!is.list(spp)){
         stop("spp must be a list.", call. = FALSE)
     }
