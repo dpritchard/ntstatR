@@ -76,19 +76,28 @@
         <div class="col-lg-2">
             <button type="submit" class="btn btn-primary">Calculate</button>
         </div>
-        <div v-if="calcScore" class="col-lg">
-            <p class="text-center"><span class="font-weight-bold">Overall Score: {{ finalScorePercent }}%</span></p>
-            <doughnut v-bind:score="calcScore.final_ratio[0]" v-bind:score-max="1" v-bind:height="100"></doughnut>
-        </div>
-        <div v-if="calcError" class="col-lg text-danger">
-            <h4>Error</h4>
-            <p>{{ calcError }}</p>
+        <div class="col-lg">
+            <div v-if="calcScore" class="row">
+                <div class="col-lg-2">
+                    <doughnut v-bind:score="finalScoreRatio" v-bind:score-max="1" v-bind:height="100"></doughnut>
+                    <p class="text-center"><span class="font-weight-bold">Overall Score: {{ finalScorePercent }}%</span></p>
+                </div>
+                <div v-for="(sp, indx) in calcScore.spp" class="col-lg-2">
+                    <doughnut v-bind:score="sp.incl_saftey_ratio[0]" v-bind:score-max="1" v-bind:height="100"></doughnut>
+                    <p class="text-center"><span class="font-weight-bold">{{ sp.name[0] }}: {{ _.round(sp.incl_saftey_ratio[0]*100) }}%</span></p>
+                </div>
+            </div>
+            <div v-if="calcError" class="row">
+                <div class="col-lg text-danger">
+                    <h4>Error</h4>
+                    <p>{{ calcError }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 </main>
 
-    <script src="./js/app.js"></script>
-
+<script src="./js/app.js"></script>
 </body>
 </html>

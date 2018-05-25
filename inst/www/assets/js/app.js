@@ -55,15 +55,8 @@ const app = new Vue({
             return _.toArray(this.habitat)
         },
         sppCalcData() {
-            let out = {
-                names: [],
-                scores: []
-            }
-            _.forEach(this.kaiSpecies, function(object) {
-                 out.scores.push([object.replace, object.getAFeed, object.tasteCondition]);
-                 out.names.push(object.name);
-            });
-            return out
+            // Consider stripping out unneeded data?
+            return this.kaiSpecies
         },
         calcData() {
             return {
@@ -72,10 +65,11 @@ const app = new Vue({
                 'habitat': this.habitatCalcData
             }
         },
+        finalScoreRatio() {
+            return this.calcScore.final.ratio[0]
+        },
         finalScorePercent() {
-            return 444
-            // return calcScore.final_ratio*100
-            // _.round(calcScore.final_ratio[0]*100)
+            return _.round(this.finalScoreRatio*100)
         }
     },
 
@@ -83,7 +77,6 @@ const app = new Vue({
         onSubmit() {
             this.calcScore = null;
             this.calcError = null;
-            // Optionally the request above could also be done as
             axios.post('https://cloud.opencpu.org/ocpu/apps/dpritchard/ntstatR/R/statm/json', this.calcData)
               .then(response => {
                   this.calcScore = response.data;

@@ -1,5 +1,5 @@
 <template>
-    <canvas class="mx-auto" data-chart="dougnut" v-bind:height="height"></canvas>
+    <canvas class="mx-auto" data-chart="dougnut"></canvas>
 </template>
 
 <script>
@@ -8,29 +8,31 @@ export default {
 
     computed: {
         finalColour() {
-            if(this.score < this.scoreMax*0.5) {
-                return '#FF0000'
-            } else if (this.score < this.scoreMax*0.75) {
-                return '#FFC300'
+            if(this.score == 0){
+                return ['#C9C9C9', '#D72E3D']
+            } else if(this.score <= this.scoreMax*0.5) {
+                return ['#D72E3D', '#C9C9C9']
+            } else if (this.score <= this.scoreMax*0.75) {
+                return ['#FFB90B', '#C9C9C9']
             } else {
-                return '#008000'
+                return ['#249D3D', '#C9C9C9']
             }
         }
     },
 
     mounted() {
-        console.log(this.doughnutData);
+        console.log(this.score);
         let config = {
             type: 'doughnut',
             data: {
                 datasets: [{
                     data: [this.score, this.scoreMax-this.score],
-                    backgroundColor : [this.finalColour, '#C9C9C9'],
+                    backgroundColor : this.finalColour,
                     borderWidth: [0, 0],
                 }],
             },
             options: {
-                responsive: false,
+                responsive: true,
                 cutoutPercentage: 70,
                 tooltips: {
                     enabled: false,
@@ -50,8 +52,8 @@ export default {
                 }
             }
         };
-        console.log(config);
-        console.log(this.$el);
+        // console.log(config);
+        // console.log(this.$el);
         new chart(this.$el, config)
     }
 };
