@@ -7,6 +7,11 @@ statm <- function(safe, spp, habitat){
         stop("safe must be in the range 0 to 4")
     }
     # Test spp
+    # JSON POST requests get cast to a dataframe
+    # However, the rest of the R implimentation expects a list.
+    # So here we uncast it....
+    # See the following link for detials of JSON casting:
+    # https://arxiv.org/abs/1403.2805
     if(is.data.frame(spp)){
         tmp <- list()
         for(a in 1:nrow(spp)){
@@ -140,3 +145,6 @@ print.statm <- function(x, include_safe = TRUE, ...){
         }
     }
 }
+
+# I would like to define an asJSON or toJSON method for objects of class `statm`, but that doesn't seem to be possible. Then I could control what is returned, and how. See here for more info:
+# https://github.com/jeroen/jsonlite/issues/62
